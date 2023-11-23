@@ -1,0 +1,37 @@
+1. check username / password in post(Login) request [Req.body]
+2. If exist create JWT
+3. Send the Token to FE
+4. Setup authentication to access Dashboard only if they have token
+5. If a user does not provide username & Password while logging in, there are 4 ways, we can validate
+    1. Using the mongoose validator
+    2. 3rd party package named "joi" 
+    3. Check in controller, check with condition (!username || !password)
+6. HTTPS is a stateless, that means, the server does not remember the client`s previous request once it provides the response, 
+    so on each request, the client(HTTP) has to provide with the valid token.
+
+7. To overcome the statelessness of HTTP, various techniques can be employed, such as:
+    1. cookies - Web servers can use cookies to store small pieces of data on the client's browser, 
+    allowing them to recognize returning users and maintain session information.
+
+    2. Session IDs: Servers can generate unique session IDs and associate them with client sessions. 
+    The client includes this session ID in subsequent requests, allowing the server to identify and associate the request with a specific session.
+
+    3. JWT (JSON Web Tokens): JWTs can be used to create self-contained tokens that carry user information. 
+    These tokens can be sent with each request to authenticate and identify the user.
+
+8. JWT : The information can be verified as its digitally signed.
+        JWTs can be signed using a secret (with the HMAC algorithm) or a public/private key pair using RSA or ECDSA.
+        JWT Structure : JSON Web Tokens consist of three parts separated by dots (.) Header | Payload | Signature
+9. JWT Package : npm install jsonwebtoken
+10. In the controller to create a JWT
+    1. import jwt : const jwt = require('jsonwebtoken')
+    2. create a JWT_SECRET on .env file
+    3. keep the payload small, so cretae an ID or get it from the DB
+    4. create the token : const token = jwt.sign({id, username}, process.env.JWT_SECRET,{expiresIn:'30d'})
+    5. Use postman to create the user using post request and put username & password on the body, get the token
+    6. use that token for login, but for that you need to use that token on Header as  key: Authorisation & value: Bearer token_string
+11. How to decode the JWT to find the payload information?
+    1. We need to find the name of user who is authorised to access the dashboard
+    2. From the authheader and find the token
+    3. Then decode the Token using the method jwt.verify(token, JWT_SECRET_FROM_ENV) || This will give the payload and you can find the user name
+

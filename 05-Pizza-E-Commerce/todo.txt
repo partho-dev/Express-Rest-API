@@ -1,0 +1,30 @@
+[ * ] Register a user
+        user name
+        user email 
+        user password 
+        user confirmed password
+
+        checklist:
+        1. Validate the request 
+            use the joi library for that 
+            npm install joi
+            documentation : https://joi.dev/api/?v=17.9.1
+        2. Authorise the request
+        3. Check if the user is in the DB already or not
+        4. repare model
+        5. Store in Database
+        6. Generate JWT token
+        7. Send Response
+
+[ * ] Login a user
+        validate using Joi if the input entries are in correct format or not
+        Check if the input username is available on the DB
+        check if the password is matching with the DB
+        Send the token back to user for Authorise
+[ * ] Who am i
+[ * ] Refresh tokens
+[ * ] Add new products
+[ * ] update a product
+[ * ] Get all products
+[ * ] Get simgle product
+[ * ] Delete a product
