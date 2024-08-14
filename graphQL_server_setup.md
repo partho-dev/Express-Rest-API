@@ -43,3 +43,43 @@ to
 ## Setup apollo graphql server on Express
 - install apollo server `npm install @apollo/server graphql`
 
+- Set up a root path on the GQL server which would talk with the client
+- For that we need to setup the apollo server - https://www.apollographql.com/docs/apollo-server/api/express-middleware/
+- set up/update that on src/server.ts
+```
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
+import cors from 'cors';
+import express from 'express';
+
+const app = express();
+
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+});
+// Note you must call `start()` on the `ApolloServer`
+// instance before passing the instance to `expressMiddleware`
+await server.start();
+
+// Specify the path where we'd like to mount our server
+//highlight-start
+app.use('/graphql', cors(), express.json(), expressMiddleware(server));
+
+//highlight-end
+```
+- But this has a problem, it expects to start the GQL server using await, which can only be possible if we have an async function wrapped with.
+- So, we have to change the code and run express & GQL inside a async function
+- ensure to install - `npm i @types/cors`
+- now execute - `npm run dev`
+- This is how we define the graphql server with its components `typeDefs` & `resolvers`
+```
+const GQLserver = new ApolloServer({
+    typeDefs : `type Query { user:String }`,
+    resolvers : { Query : { user : ()=> {return "I am the user" } } },
+  });
+```
+- Login to url `http://localhost:3000/graphql`
+- This gives a apollo client simulator to see the data coming from backend based on the FE request
+
+
