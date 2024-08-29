@@ -45,6 +45,7 @@ to
 
 - Set up a root path on the GQL server which would talk with the client
 - For that we need to setup the apollo server - https://www.apollographql.com/docs/apollo-server/api/express-middleware/
+
 - set up/update that on src/server.ts
 ```
 import { ApolloServer } from '@apollo/server';
