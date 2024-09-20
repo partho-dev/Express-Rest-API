@@ -1,0 +1,22 @@
+version: '3'
+services:
+  mongo:
+    image: mongo
+    container_name: mongo-server
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: partho
+      MONGO_INITDB_ROOT_PASSWORD: partho
+    ports:
+      - "27017:27017"
+
+  express-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: express-app
+    environment:
+      - DB_URL_Mongo=mongodb://partho:partho@mongo:27017/mydb?authSource=admin
+    ports:
+      - "3010:3000"
+    depends_on:
+      - mongo

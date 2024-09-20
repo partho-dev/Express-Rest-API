@@ -1,0 +1,6 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongo-config
+data:
+  mongo-url: mongodb+srv://<user_name>:<Password>@express-projects.lnzhdto.mongodb.net/minikube?retryWrites=true&w=majority

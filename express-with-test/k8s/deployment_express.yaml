@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: express-server
+  template:
+    metadata:
+      labels:
+        app: express-server
+    spec:
+      containers:
+      - name: express-server
+        image: parthodas/express:v1
+        ports:
+        - containerPort: 3000
+        env:
+        - name: URL_Mongo
+          value: "mongodb://partho:partho@mongo-service:27017"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: express-service
+spec:
+  selector:
+    app: express-server
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: NodePort
