@@ -1,0 +1,109 @@
+pipeline {
+    agent any
+    tools {
+        nodejs 'node20'   // Adjust to your preferred Node.js version
+        // sonar 'sonarScanner'  // This is the correct tool type for SonarQube Scanner
+    }
+    environment {
+        SONAR_HOST_URL = 'http://13.233.186.12:9000'
+        NEXUS_VERSION = "nexus3"
+        NEXUS_PROTOCOL = "http"
+        NEXUS_URL = "http://54.175.95.188:8081"
+        // DOCKER_REPO = 'http://54.175.95.188:8081/repository/erg-docker-hosted-repo'
+        DOCKER_REPO = 'http://54.175.95.188:8092'
+        // DOCKER_CREDENTIALS_ID = 'nexus-docker-creds'
+        NEXUS_CREDENTIAL_ID = "jenkins-user-on-nexus"
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                echo "<=======Checking out the Source Code===========>"
+                git branch: 'main', url: 'https://github.com/partho-dev/Express-Rest-API.git'
+            }
+        }
+        stage('Navigate to Express-Project') {
+            steps {
+                echo "<=======CHanging to the project Directory===========>"
+                dir('express-with-test') {
+                    // From this point onwards, all commands will run inside the 'nextJs-Sample' folder
+                    echo "Changed directory to Express Project"
+                }
+            }
+        }
+        stage('Install Dependencies') {
+            steps {
+                echo "<=======Installing all the dependancies===========>"
+                dir('express-with-test'){
+                    sh 'npm install'
+                }
+                
+            }
+        }
+    //     stage('Build') {
+    //         steps {
+    //             echo "<=======Building the code===========>"
+    //             dir('nextJs-Sample') {
+    //                 sh 'npm run build'
+    //             }
+    //         }
+    //     }
+        stage('Test') {
+            steps {
+                echo "<=======Initiating the unit Test===========>"
+                dir('express-with-test') {
+                    // sh 'npm run test'
+                }
+            }
+        }
+        stage('SonarQube Analysis') {
+                environment {
+                scannerHome = tool 'sonarScanner'
+                }
+            steps {
+                echo "<=======Initiating the SAST===========>"
+                dir('express-with-test') {
+                    // Create sonar-project.properties inside 'nextJs-Sample' folder
+                    writeFile file: 'sonar-project.properties', text: '''
+                        sonar.projectKey=express-with-test-${env.BUILD_ID}
+                        sonar.projectName=express-with-test
+                        sonar.sources=.
+                        sonar.language=js
+                        sonar.sourceEncoding=UTF-8
+                        sonar.exclusions=node_modules/**/*
+                    '''
+                    withSonarQubeEnv('sonarServer') {
+                        // sh 'sonar-scanner'
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                }
+            }
+        }
+        stage('Docker Build') {
+            steps {
+                echo "<=======Building the Docker Image===========>"
+                dir('express-with-test') {
+                    script {
+                        def app = docker.build("express-app:${env.BUILD_ID}", ".")
+                    }
+                }
+            }
+        }
+        stage('Docker Push to Nexus') {
+            steps {
+                echo "<=======Pushing the Docker Image to Nexus ===========>"
+                script {
+                    docker.withRegistry("${DOCKER_REPO}", "${NEXUS_CREDENTIAL_ID}") {
+                        def app = docker.image("express-app:${env.BUILD_ID}")
+                        app.push("latest")
+                        app.push("${env.BUILD_ID}")
+                    }
+                }
+            }
+        }
+    // }
+    // post {
+    //     always {
+    //         cleanWs()
+    //     }
+    }
+}
